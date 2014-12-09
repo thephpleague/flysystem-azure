@@ -18,7 +18,7 @@ This is a Flysystem adapter for the Windows Azure.
 <?php
 use WindowsAzure\Common\ServicesBuilder;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Adapter\Azure as Adapter;
+use League\Flysystem\Azure\Adapter;
 
 $endpoint = sprintf('DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s', 'account-name', 'api-key');
 $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($endpoint);
