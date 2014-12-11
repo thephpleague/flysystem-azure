@@ -1,12 +1,15 @@
 {
     "name": "league/flysystem-azure",
     "description": "Flysystem adapter for Windows Azure",
-    "autoload": {
-        "psr-4": {
-            "League\\Flysystem\\Azure\\": "src"
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Frank de Jonge",
+            "email": "info@frenky.net"
         }
-    },
+    ],
     "require": {
+        "php": ">=5.4.0",
         "league/flysystem": "~1.0@dev",
         "pear-pear.php.net/mail_mime" : "*",
         "pear-pear.php.net/http_request2" : "*",
@@ -17,13 +20,11 @@
         "phpunit/phpunit": "~4.0",
         "mockery/mockery": "~0.9"
     },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Frank de Jonge",
-            "email": "info@frenky.net"
+    "autoload": {
+        "psr-4": {
+            "League\\Flysystem\\Azure\\": "src/"
         }
-    ],
+    },
     "config": {
         "bin-dir": "bin"
     },
@@ -32,5 +33,10 @@
             "type": "pear",
             "url": "http://pear.php.net"
         }
-    ]
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
 }

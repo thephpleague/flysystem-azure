@@ -9,7 +9,7 @@ use WindowsAzure\Blob\Models\GetBlobResult;
 use WindowsAzure\Common\Internal\Resources;
 use WindowsAzure\Common\ServiceException;
 
-class AzureAdapterTests extends \PHPUnit_Framework_TestCase
+class AzureTests extends \PHPUnit_Framework_TestCase
 {
     const CONTAINER_NAME = 'test-container';
 
