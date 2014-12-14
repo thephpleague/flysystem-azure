@@ -27,6 +27,8 @@ class Adapter implements AdapterInterface
     protected $client;
 
     /**
+     * Constructor.
+     *
      * @param IBlob  $azureClient
      * @param string $container
      */
@@ -221,7 +223,7 @@ class Adapter implements AdapterInterface
     }
 
     /**
-     * Builds the normalized output array
+     * Builds the normalized output array.
      *
      * @param string $path
      * @param int    $timestamp
@@ -266,9 +268,10 @@ class Adapter implements AdapterInterface
     }
 
     /**
-     * Retrieves content streamed by Azure into a string
+     * Retrieves content streamed by Azure into a string.
      *
-     * @param  resource $resource
+     * @param resource $resource
+     *
      * @return string
      */
     protected function streamContentsToString($resource)
