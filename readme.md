@@ -12,6 +12,10 @@
 
 This is a Flysystem adapter for the Windows Azure.
 
+```bash
+composer require league/flysystem-azure
+```
+
 # Bootstrap
 
 ``` php
