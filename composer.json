@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "league/flysystem": "~1.0@dev",
+        "league/flysystem": "~1.0@alpha",
         "pear-pear.php.net/mail_mime" : "*",
         "pear-pear.php.net/http_request2" : "*",
         "pear-pear.php.net/mail_mimedecode" : "*",
