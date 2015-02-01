@@ -22,10 +22,10 @@ composer require league/flysystem-azure
 <?php
 use WindowsAzure\Common\ServicesBuilder;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Azure\Adapter;
+use League\Flysystem\Azure\AzureAdapter;
 
 $endpoint = sprintf('DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s', 'account-name', 'api-key');
 $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($endpoint);
 
-$filesystem = new Filesystem(new Adapter($blobRestProxy, 'my-container'));
+$filesystem = new Filesystem(new AzureAdapter($blobRestProxy, 'my-container'));
 ```

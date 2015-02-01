@@ -49,7 +49,13 @@ class AzureTests extends \PHPUnit_Framework_TestCase
     {
         $this->azure = $this->getAzureClient();
 
-        $this->adapter = new Adapter($this->azure, self::CONTAINER_NAME);
+        $this->adapter = new AzureAdapter($this->azure, self::CONTAINER_NAME);
+    }
+
+    public function testBCAdapter()
+    {
+        $adapter = new Adapter($this->azure, self::CONTAINER_NAME);
+        $this->assertInstanceOf('League\Flysystem\Azure\AzureAdapter', $adapter);
     }
 
     public function testWrite()
