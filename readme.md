@@ -12,6 +12,20 @@
 
 This is a Flysystem adapter for the Windows Azure.
 
+First ensure the pear repository is added to you `composer.json` file.
+
+```json
+"repositories": [
+    {
+        "type": "pear",
+        "url": "http://pear.php.net"
+    }
+],
+```
+
+Then install the latest version of the adapter using:
+
+
 ```bash
 composer require league/flysystem-azure
 ```
