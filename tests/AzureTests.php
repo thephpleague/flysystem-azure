@@ -178,14 +178,14 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testHasWhenFileExists()
     {
-        $this->azure->shouldReceive('getBlob')->once()->andReturn(true);
+        $this->azure->shouldReceive('getBlobMetadata')->once()->andReturn(true);
 
         $this->assertTrue($this->adapter->has('foo.txt'));
     }
 
     public function testHasWhenFileDoesNotExist()
     {
-        $this->azure->shouldReceive('getBlob')->andThrow(new ServiceException(404));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(404));
 
         $this->assertFalse($this->adapter->has('foo.txt'));
     }
@@ -195,7 +195,7 @@ class AzureTests extends \PHPUnit_Framework_TestCase
      */
     public function testHasWhenError()
     {
-        $this->azure->shouldReceive('getBlob')->andThrow(new ServiceException(500));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(500));
 
         $this->adapter->has('foo.txt');
     }

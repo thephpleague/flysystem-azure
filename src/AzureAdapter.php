@@ -131,7 +131,7 @@ class AzureAdapter implements AdapterInterface
     public function has($path)
     {
         try {
-            $this->client->getBlob($this->container, $path);
+            $this->client->getBlobMetadata($this->container, $path);
         } catch (ServiceException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
