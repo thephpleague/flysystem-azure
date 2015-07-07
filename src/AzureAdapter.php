@@ -192,8 +192,8 @@ class AzureAdapter implements AdapterInterface
      */
     public function getMetadata($path)
     {
-        /** @var GetBlobResult $result */
-        $result = $this->client->getBlob($this->container, $path);
+        /** @var GetBlobPropertiesResult $result */
+        $result = $this->client->getBlobProperties($this->container, $path);
 
         return $this->normalizeBlobProperties($path, $result->getProperties());
     }

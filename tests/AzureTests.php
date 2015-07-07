@@ -159,7 +159,7 @@ class AzureTests extends \PHPUnit_Framework_TestCase
     {
         $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', 'foo bar');
 
-        $this->azure->shouldReceive('getBlob')->andReturn($resultBlob);
+        $this->azure->shouldReceive('getBlobProperties')->andReturn($resultBlob);
 
         $expectedResult = [
             'path'      => 'bar/foo.txt',
