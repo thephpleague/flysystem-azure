@@ -11,9 +11,9 @@
     "require": {
         "php": ">=5.4.0",
         "league/flysystem": "~1.0",
-        "pear-pear.php.net/mail_mime" : "*",
-        "pear-pear.php.net/http_request2" : "*",
-        "pear-pear.php.net/mail_mimedecode" : "*",
+        "pear/mail_mime" : "*",
+        "pear/http_request2" : "*",
+        "pear/mail_mimedecode" : "*",
         "microsoft/windowsazure": "~0.4.0"
     },
     "require-dev": {
