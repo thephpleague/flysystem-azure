@@ -13,7 +13,7 @@
         "league/flysystem": "~1.0",
         "pear/mail_mime" : "*",
         "pear/http_request2" : "*",
-        "pear/mail_mimedecode" : "*",
+        "pear/mail_mime-decode" : "*",
         "microsoft/windowsazure": "~0.4.0"
     },
     "require-dev": {
