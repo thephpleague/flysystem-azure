@@ -4,15 +4,20 @@ namespace League\Flysystem\Azure;
 
 use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
 use WindowsAzure\Blob\Internal\IBlob;
+use WindowsAzure\Blob\Models\Blob;
 use WindowsAzure\Blob\Models\BlobProperties;
+use WindowsAzure\Blob\Models\CopyBlobResult;
+use WindowsAzure\Blob\Models\GetBlobPropertiesResult;
+use WindowsAzure\Blob\Models\GetBlobResult;
 use WindowsAzure\Blob\Models\ListBlobsOptions;
 use WindowsAzure\Blob\Models\ListBlobsResult;
 use WindowsAzure\Common\ServiceException;
 
-class AzureAdapter implements AdapterInterface
+class AzureAdapter extends AbstractAdapter implements AdapterInterface
 {
     use NotSupportingVisibilityTrait;
 
@@ -31,11 +36,13 @@ class AzureAdapter implements AdapterInterface
      *
      * @param IBlob  $azureClient
      * @param string $container
+     * @param string $prefix
      */
-    public function __construct(IBlob $azureClient, $container)
+    public function __construct(IBlob $azureClient, $container, $prefix = null)
     {
         $this->client = $azureClient;
         $this->container = $container;
+        $this->setPathPrefix($prefix);
     }
 
     /**
@@ -75,6 +82,13 @@ class AzureAdapter implements AdapterInterface
      */
     public function rename($path, $newpath)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
+        // Prefix the new path
+        // TODO: should we attempt to prefix the $newpath here?
+        $newpath = $this->applyPathPrefix($newpath);
+
         $this->client->copyBlob($this->container, $newpath, $this->container, $path);
 
         return $this->delete($path);
@@ -82,6 +96,13 @@ class AzureAdapter implements AdapterInterface
 
     public function copy($path, $newpath)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
+        // Prefix the new path
+        // TODO: should we attempt to prefix the $newpath here?
+        $newpath = $this->applyPathPrefix($newpath);
+
         /** @var CopyBlobResult $result */
         $this->client->copyBlob($this->container, $newpath, $this->container, $path);
 
@@ -93,6 +114,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function delete($path)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         $this->client->deleteBlob($this->container, $path);
 
         return true;
@@ -103,6 +127,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function deleteDir($dirname)
     {
+        // Prefix the path
+        $dirname = $this->applyPathPrefix($dirname);
+
         $options = new ListBlobsOptions();
         $options->setPrefix($dirname);
 
@@ -122,6 +149,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function createDir($dirname, Config $config)
     {
+        // Prefix the path
+        $dirname = $this->applyPathPrefix($dirname);
+
         return ['path' => $dirname, 'type' => 'dir'];
     }
 
@@ -130,6 +160,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function has($path)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         try {
             $this->client->getBlobMetadata($this->container, $path);
         } catch (ServiceException $e) {
@@ -148,6 +181,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function read($path)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         /** @var GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
@@ -161,6 +197,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function readStream($path)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         /** @var GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
@@ -173,6 +212,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function listContents($directory = '', $recursive = false)
     {
+        // Prefix the path
+        $directory = $this->applyPathPrefix($directory);
+
         $options = new ListBlobsOptions();
         $options->setPrefix($directory);
 
@@ -192,6 +234,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function getMetadata($path)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         /** @var GetBlobPropertiesResult $result */
         $result = $this->client->getBlobProperties($this->container, $path);
 
@@ -203,7 +248,7 @@ class AzureAdapter implements AdapterInterface
      */
     public function getSize($path)
     {
-        return $this->getMetadata($path);
+        return $this->getMetadata($path)['size'];
     }
 
     /**
@@ -211,7 +256,7 @@ class AzureAdapter implements AdapterInterface
      */
     public function getMimetype($path)
     {
-        return $this->getMetadata($path);
+        return $this->getMetadata($path)['mimetype'];
     }
 
     /**
@@ -219,7 +264,7 @@ class AzureAdapter implements AdapterInterface
      */
     public function getTimestamp($path)
     {
-        return $this->getMetadata($path);
+        return $this->getMetadata($path)['timestamp'];
     }
 
     /**
@@ -283,13 +328,16 @@ class AzureAdapter implements AdapterInterface
      * Upload a file.
      *
      * @param string $path
-     * @param mixed  $content Either a string or a stream.
+     * @param mixed  $contents Either a string or a stream.
      * @param Config $config
      *
      * @return array
      */
     protected function upload($path, $contents, Config $config)
     {
+        // Prefix the path
+        $path = $this->applyPathPrefix($path);
+
         /** @var CopyBlobResult $result */
         $result = $this->client->createBlockBlob($this->container, $path, $contents);
 
