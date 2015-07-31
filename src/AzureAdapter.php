@@ -266,7 +266,7 @@ class AzureAdapter extends AbstractAdapter implements AdapterInterface
      */
     public function getSize($path)
     {
-        return $this->getMetadata($path)['size'];
+        return $this->getMetadata($path);
     }
 
     /**
@@ -274,7 +274,7 @@ class AzureAdapter extends AbstractAdapter implements AdapterInterface
      */
     public function getMimetype($path)
     {
-        return $this->getMetadata($path)['mimetype'];
+        return $this->getMetadata($path);
     }
 
     /**
@@ -282,7 +282,7 @@ class AzureAdapter extends AbstractAdapter implements AdapterInterface
      */
     public function getTimestamp($path)
     {
-        return $this->getMetadata($path)['timestamp'];
+        return $this->getMetadata($path);
     }
 
     /**
