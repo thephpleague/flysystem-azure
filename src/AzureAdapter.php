@@ -122,6 +122,8 @@ class AzureAdapter implements AdapterInterface
      */
     public function createDir($dirname, Config $config)
     {
+        $this->write(rtrim($dirname, '/').'/', ' ', $config);
+
         return ['path' => $dirname, 'type' => 'dir'];
     }
 
@@ -184,7 +186,7 @@ class AzureAdapter implements AdapterInterface
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
         }
 
-        return $contents;
+        return Util::emulateDirectories($contents);
     }
 
     /**
@@ -257,6 +259,13 @@ class AzureAdapter implements AdapterInterface
      */
     protected function normalizeBlobProperties($path, BlobProperties $properties)
     {
+        if (substr($path, -1) === '/') {
+            $result['type'] = 'dir';
+            $result['path'] = rtrim($path, '/');
+
+            return $result;
+        }
+
         return [
             'path'      => $path,
             'timestamp' => (int) $properties->getLastModified()->format('U'),
