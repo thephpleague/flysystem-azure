@@ -202,6 +202,9 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testCreateDir()
     {
+        $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
+        $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
+
         $this->assertSame([
             'path' => 'foo-dir',
             'type' => 'dir',
@@ -270,5 +273,49 @@ class AzureTests extends \PHPUnit_Framework_TestCase
                 'type'      => 'file',
             ],
         ], $this->adapter->listContents());
+    }
+
+    public function testDirectoryEmulationInListContents()
+    {
+        $properties = Mockery::mock('WindowsAzure\Blob\Models\BlobProperties');
+        $properties->shouldReceive('getLastModified')->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
+        $properties->shouldReceive('getContentType')->andReturn('text/plain');
+        $properties->shouldReceive('getContentLength')->andReturn(42);
+
+        $fileBlob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $fileBlob->shouldReceive('getName')->once()->andReturn('foo.txt');
+        $fileBlob->shouldReceive('getProperties')->once()->andReturn($properties);
+
+        $folderBlob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $folderBlob->shouldReceive('getName')->once()->andReturn('baz/bar.txt');
+        $folderBlob->shouldReceive('getProperties')->once()->andReturn($properties);
+
+        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList->shouldReceive('getBlobs')->once()->andReturn([$fileBlob, $folderBlob]);
+
+        $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
+
+        $listing = $this->adapter->listContents();
+
+        $first = reset($listing);
+
+        $this->assertSame($first, [
+            'path'      => 'foo.txt',
+            'timestamp' => 1417507741,
+            'dirname'   => '',
+            'mimetype'  => 'text/plain',
+            'size'      => 42,
+            'type'      => 'file',
+        ] );
+
+        $last = end($listing);
+
+        $this->assertSame($last, [
+            'dirname'   => '',
+            'basename'  => 'baz',
+            'filename'  => 'baz',
+            'path'      => 'baz',
+            'type'      => 'dir',
+        ] );
     }
 }
