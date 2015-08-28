@@ -22,7 +22,7 @@ class AzureAdapter implements AdapterInterface
     protected $container;
 
     /**
-     * @var \WindowsAzure\Blob\Internal\IBlob
+     * @var IBlob
      */
     protected $client;
 
@@ -39,7 +39,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function write($path, $contents, Config $config)
     {
@@ -47,7 +47,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function writeStream($path, $resource, Config $config)
     {
@@ -55,7 +55,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function update($path, $contents, Config $config)
     {
@@ -63,7 +63,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function updateStream($path, $resource, Config $config)
     {
@@ -71,25 +71,24 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rename($path, $newpath)
     {
-        $this->client->copyBlob($this->container, $newpath, $this->container, $path);
+        $this->copy($path, $newpath);
 
         return $this->delete($path);
     }
 
     public function copy($path, $newpath)
     {
-        /** @var CopyBlobResult $result */
         $this->client->copyBlob($this->container, $newpath, $this->container, $path);
 
         return true;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function delete($path)
     {
@@ -99,7 +98,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function deleteDir($dirname)
     {
@@ -118,17 +117,17 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function createDir($dirname, Config $config)
     {
-        $this->write(rtrim($dirname, '/').'/', ' ', $config);
+        $this->write(rtrim($dirname, '/') . '/', ' ', $config);
 
         return ['path' => $dirname, 'type' => 'dir'];
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function has($path)
     {
@@ -146,7 +145,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function read($path)
     {
@@ -159,7 +158,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function readStream($path)
     {
@@ -171,7 +170,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function listContents($directory = '', $recursive = false)
     {
@@ -190,7 +189,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getMetadata($path)
     {
@@ -201,7 +200,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getSize($path)
     {
@@ -209,7 +208,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getMimetype($path)
     {
@@ -217,7 +216,7 @@ class AzureAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getTimestamp($path)
     {
@@ -236,10 +235,10 @@ class AzureAdapter implements AdapterInterface
     protected function normalize($path, $timestamp, $content = null)
     {
         $data = [
-            'path'      => $path,
+            'path' => $path,
             'timestamp' => (int) $timestamp,
-            'dirname'   => Util::dirname($path),
-            'type'      => 'file',
+            'dirname' => Util::dirname($path),
+            'type' => 'file',
         ];
 
         if (is_string($content)) {
@@ -260,19 +259,16 @@ class AzureAdapter implements AdapterInterface
     protected function normalizeBlobProperties($path, BlobProperties $properties)
     {
         if (substr($path, -1) === '/') {
-            $result['type'] = 'dir';
-            $result['path'] = rtrim($path, '/');
-
-            return $result;
+            return ['type' => 'dir', 'path' => rtrim($path, '/')];
         }
 
         return [
-            'path'      => $path,
+            'path' => $path,
             'timestamp' => (int) $properties->getLastModified()->format('U'),
-            'dirname'   => Util::dirname($path),
-            'mimetype'  => $properties->getContentType(),
-            'size'      => $properties->getContentLength(),
-            'type'      => 'file',
+            'dirname' => Util::dirname($path),
+            'mimetype' => $properties->getContentType(),
+            'size' => $properties->getContentLength(),
+            'type' => 'file',
         ];
     }
 
