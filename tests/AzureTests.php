@@ -5,6 +5,7 @@ namespace League\Flysystem\Azure;
 use League\Flysystem\Config;
 use Mockery;
 use WindowsAzure\Blob\Models\CopyBlobResult;
+use WindowsAzure\Blob\Models\CreateBlobOptions;
 use WindowsAzure\Blob\Models\GetBlobResult;
 use WindowsAzure\Common\Internal\Resources;
 use WindowsAzure\Common\ServiceException;
@@ -357,5 +358,46 @@ class AzureTests extends \PHPUnit_Framework_TestCase
                 'path'      => 'bar'
             ]
         ], $this->adapter->listContents());
+    }
+
+    public function testConfigShouldNotBeIgnored()
+    {
+        $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
+        $settings = [
+            'ContentType'     => 'someContentType',
+            'CacheControl'    => 'someCacheControl',
+            'Metadata'        => 'someMetadata',
+            'ContentLanguage' => 'someContentLanguage',
+            'ContentEncoding' => 'someContentEncoding',
+        ];
+
+        $this->azure->shouldReceive('createBlockBlob')->once()->with(
+            self::CONTAINER_NAME,
+            'bar/foo.txt',
+            'content',
+            Mockery::on(function(CreateBlobOptions $options) use ($settings) {
+                foreach ($settings as $key => $value) {
+                    if (call_user_func([$options, "get$key"]) != $value){
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+        )->andReturn($resultBlob);
+
+
+        $this->assertSame([
+            'path'      => 'bar/foo.txt',
+            'timestamp' => 1417507741,
+            'dirname'   => 'bar',
+            'type'      => 'file',
+            'contents'  => 'content',
+        ], $this->adapter->write('bar/foo.txt', 'content', new Config($settings)));
+    }
+
+    protected function tearDown()
+    {
+        Mockery::close();
     }
 }
