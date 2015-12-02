@@ -32,7 +32,7 @@ class AzureTests extends \PHPUnit_Framework_TestCase
     protected function getReadBlobResult($lastModified, $contentString)
     {
         return GetBlobResult::create([
-            Resources::LAST_MODIFIED  => $lastModified,
+            Resources::LAST_MODIFIED => $lastModified,
             Resources::CONTENT_LENGTH => strlen($contentString),
         ], $contentString, []);
     }
@@ -65,11 +65,11 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'type'      => 'file',
-            'contents'  => 'content',
+            'dirname' => 'bar',
+            'type' => 'file',
+            'contents' => 'content',
         ], $this->adapter->write('bar/foo.txt', 'content', new Config()));
     }
 
@@ -79,11 +79,11 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'type'      => 'file',
-            'contents'  => 'content',
+            'dirname' => 'bar',
+            'type' => 'file',
+            'contents' => 'content',
         ], $this->adapter->update('bar/foo.txt', 'content', new Config()));
     }
 
@@ -95,10 +95,10 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'type'      => 'file',
+            'dirname' => 'bar',
+            'type' => 'file',
         ], $this->adapter->writeStream('bar/foo.txt', $stream, new Config()));
     }
 
@@ -110,10 +110,10 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'type'      => 'file',
+            'dirname' => 'bar',
+            'type' => 'file',
         ], $this->adapter->updateStream('bar/foo.txt', $stream, new Config()));
     }
 
@@ -124,13 +124,13 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('getBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'mimetype'  => null,
-            'size'      => 7,
-            'type'      => 'file',
-            'contents'  => 'foo bar',
+            'dirname' => 'bar',
+            'mimetype' => null,
+            'size' => 7,
+            'type' => 'file',
+            'contents' => 'foo bar',
         ], $this->adapter->read('bar/foo.txt', new Config()));
     }
 
@@ -147,12 +147,12 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         unset($result['stream']);
 
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'mimetype'  => null,
-            'size'      => 7,
-            'type'      => 'file',
+            'dirname' => 'bar',
+            'mimetype' => null,
+            'size' => 7,
+            'type' => 'file',
         ], $result);
     }
 
@@ -163,12 +163,12 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $this->azure->shouldReceive('getBlobProperties')->andReturn($resultBlob);
 
         $expectedResult = [
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'mimetype'  => null,
-            'size'      => 7,
-            'type'      => 'file',
+            'dirname' => 'bar',
+            'mimetype' => null,
+            'size' => 7,
+            'type' => 'file',
         ];
 
         $this->assertSame($expectedResult, $this->adapter->getMetadata('bar/foo.txt'));
@@ -268,12 +268,12 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
         $this->assertSame([
             [
-                'path'      => 'foo.txt',
+                'path' => 'foo.txt',
                 'timestamp' => 1417507741,
-                'dirname'   => '',
-                'mimetype'  => 'text/plain',
-                'size'      => 42,
-                'type'      => 'file',
+                'dirname' => '',
+                'mimetype' => 'text/plain',
+                'size' => 42,
+                'type' => 'file',
             ],
         ], $this->adapter->listContents());
     }
@@ -305,23 +305,23 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $first = reset($listing);
 
         $this->assertSame($first, [
-            'path'      => 'foo.txt',
+            'path' => 'foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => '',
-            'mimetype'  => 'text/plain',
-            'size'      => 42,
-            'type'      => 'file',
-        ] );
+            'dirname' => '',
+            'mimetype' => 'text/plain',
+            'size' => 42,
+            'type' => 'file',
+        ]);
 
         $last = end($listing);
 
         $this->assertSame($last, [
-            'dirname'   => '',
-            'basename'  => 'baz',
-            'filename'  => 'baz',
-            'path'      => 'baz',
-            'type'      => 'dir',
-        ] );
+            'dirname' => '',
+            'basename' => 'baz',
+            'filename' => 'baz',
+            'path' => 'baz',
+            'type' => 'dir',
+        ]);
     }
 
     public function testPrefixesInListContents()
@@ -364,9 +364,9 @@ class AzureTests extends \PHPUnit_Framework_TestCase
     {
         $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
         $settings = [
-            'ContentType'     => 'someContentType',
-            'CacheControl'    => 'someCacheControl',
-            'Metadata'        => 'someMetadata',
+            'ContentType' => 'someContentType',
+            'CacheControl' => 'someCacheControl',
+            'Metadata' => 'someMetadata',
             'ContentLanguage' => 'someContentLanguage',
             'ContentEncoding' => 'someContentEncoding',
         ];
@@ -375,9 +375,9 @@ class AzureTests extends \PHPUnit_Framework_TestCase
             self::CONTAINER_NAME,
             'bar/foo.txt',
             'content',
-            Mockery::on(function(CreateBlobOptions $options) use ($settings) {
+            Mockery::on(function (CreateBlobOptions $options) use ($settings) {
                 foreach ($settings as $key => $value) {
-                    if (call_user_func([$options, "get$key"]) != $value){
+                    if (call_user_func([$options, "get$key"]) != $value) {
                         return false;
                     }
                 }
@@ -386,13 +386,12 @@ class AzureTests extends \PHPUnit_Framework_TestCase
             })
         )->andReturn($resultBlob);
 
-
         $this->assertSame([
-            'path'      => 'bar/foo.txt',
+            'path' => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname'   => 'bar',
-            'type'      => 'file',
-            'contents'  => 'content',
+            'dirname' => 'bar',
+            'type' => 'file',
+            'contents' => 'content',
         ], $this->adapter->write('bar/foo.txt', 'content', new Config($settings)));
     }
 

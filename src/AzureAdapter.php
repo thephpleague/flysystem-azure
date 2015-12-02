@@ -54,7 +54,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function write($path, $contents, Config $config)
     {
@@ -62,7 +62,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeStream($path, $resource, Config $config)
     {
@@ -70,7 +70,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update($path, $contents, Config $config)
     {
@@ -78,7 +78,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function updateStream($path, $resource, Config $config)
     {
@@ -86,7 +86,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rename($path, $newpath)
     {
@@ -106,7 +106,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete($path)
     {
@@ -118,7 +118,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteDir($dirname)
     {
@@ -139,17 +139,17 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function createDir($dirname, Config $config)
     {
-        $this->write(rtrim($dirname, '/') . '/', ' ', $config);
+        $this->write(rtrim($dirname, '/').'/', ' ', $config);
 
         return ['path' => $dirname, 'type' => 'dir'];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function has($path)
     {
@@ -169,7 +169,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function read($path)
     {
@@ -184,7 +184,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function readStream($path)
     {
@@ -198,7 +198,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function listContents($directory = '', $recursive = false)
     {
@@ -234,7 +234,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMetadata($path)
     {
@@ -247,7 +247,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSize($path)
     {
@@ -255,7 +255,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMimetype($path)
     {
@@ -263,7 +263,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTimestamp($path)
     {
@@ -376,7 +376,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new CreateBlobOptions();
 
         foreach (static::$metaOptions as $option) {
-            if (! $config->has($option)) {
+            if (!$config->has($option)) {
                 continue;
             }
 
