@@ -261,6 +261,8 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
 
+        $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
+
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
 
         $this->assertSame([
@@ -293,6 +295,8 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$fileBlob, $folderBlob]);
 
+        $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
+
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
 
         $listing = $this->adapter->listContents();
@@ -317,5 +321,41 @@ class AzureTests extends \PHPUnit_Framework_TestCase
             'path'      => 'baz',
             'type'      => 'dir',
         ] );
+    }
+
+    public function testPrefixesInListContents()
+    {
+        $properties = Mockery::mock('WindowsAzure\Blob\Models\BlobProperties');
+        $properties->shouldReceive('getLastModified')->once()->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
+        $properties->shouldReceive('getContentType')->once()->andReturn('text/plain');
+        $properties->shouldReceive('getContentLength')->once()->andReturn(42);
+
+        $blob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $blob->shouldReceive('getName')->once()->andReturn('foo.txt');
+        $blob->shouldReceive('getProperties')->once()->andReturn($properties);
+
+        $blobPrefix = Mockery::mock('WindowsAzure\Blob\Models\BlobPrefix');
+        $blobPrefix->shouldReceive('getName')->once()->andReturn('bar/');
+
+        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
+        $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([$blobPrefix]);
+
+        $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
+
+        $this->assertSame([
+            [
+                'path'      => 'foo.txt',
+                'timestamp' => 1417507741,
+                'dirname'   => '',
+                'mimetype'  => 'text/plain',
+                'size'      => 42,
+                'type'      => 'file',
+            ],
+            [
+                'type'      => 'dir',
+                'path'      => 'bar'
+            ]
+        ], $this->adapter->listContents());
     }
 }

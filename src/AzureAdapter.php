@@ -7,6 +7,7 @@ use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
 use WindowsAzure\Blob\Internal\IBlob;
+use WindowsAzure\Blob\Models\BlobPrefix;
 use WindowsAzure\Blob\Models\BlobProperties;
 use WindowsAzure\Blob\Models\ListBlobsOptions;
 use WindowsAzure\Blob\Models\ListBlobsResult;
@@ -103,7 +104,7 @@ class AzureAdapter implements AdapterInterface
     public function deleteDir($dirname)
     {
         $options = new ListBlobsOptions();
-        $options->setPrefix($dirname);
+        $options->setPrefix($dirname . '/');
 
         /** @var ListBlobsResult $listResults */
         $listResults = $this->client->listBlobs($this->container, $options);
@@ -174,15 +175,30 @@ class AzureAdapter implements AdapterInterface
      */
     public function listContents($directory = '', $recursive = false)
     {
+        // Append trailing slash only for directory other than root (which after normalization is an empty string).
+        // Listing for / doesn't work properly otherwise.
+        if (strlen($directory)) {
+            $directory .= '/';
+        }
+
         $options = new ListBlobsOptions();
         $options->setPrefix($directory);
+
+        if (!$recursive) {
+            $options->setDelimiter('/');
+        }
 
         /** @var ListBlobsResult $listResults */
         $listResults = $this->client->listBlobs($this->container, $options);
 
         $contents = [];
+
         foreach ($listResults->getBlobs() as $blob) {
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
+        }
+
+        if (!$recursive) {
+            $contents = array_merge($contents, array_map([$this, 'normalizeBlobPrefix'], $listResults->getBlobPrefixes()));
         }
 
         return Util::emulateDirectories($contents);
@@ -270,6 +286,18 @@ class AzureAdapter implements AdapterInterface
             'size' => $properties->getContentLength(),
             'type' => 'file',
         ];
+    }
+
+    /**
+     * Builds the normalized output array from a BlobPrefix object.
+     *
+     * @param BlobPrefix $blobPrefix
+     *
+     * @return array
+     */
+    protected function normalizeBlobPrefix(BlobPrefix $blobPrefix)
+    {
+        return ['type' => 'dir', 'path' => rtrim($blobPrefix->getName(), '/')];
     }
 
     /**
