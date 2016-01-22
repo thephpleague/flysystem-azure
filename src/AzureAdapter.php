@@ -2,18 +2,19 @@
 
 namespace League\Flysystem\Azure;
 
+use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
-use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
 use WindowsAzure\Blob\Internal\IBlob;
 use WindowsAzure\Blob\Models\BlobPrefix;
 use WindowsAzure\Blob\Models\BlobProperties;
+use WindowsAzure\Blob\Models\CreateBlobOptions;
 use WindowsAzure\Blob\Models\ListBlobsOptions;
 use WindowsAzure\Blob\Models\ListBlobsResult;
 use WindowsAzure\Common\ServiceException;
 
-class AzureAdapter implements AdapterInterface
+class AzureAdapter extends AbstractAdapter
 {
     use NotSupportingVisibilityTrait;
 
@@ -33,10 +34,11 @@ class AzureAdapter implements AdapterInterface
      * @param IBlob  $azureClient
      * @param string $container
      */
-    public function __construct(IBlob $azureClient, $container)
+    public function __construct(IBlob $azureClient, $container, $prefix = null)
     {
         $this->client = $azureClient;
         $this->container = $container;
+        $this->setPathPrefix($prefix);
     }
 
     /**
@@ -83,6 +85,9 @@ class AzureAdapter implements AdapterInterface
 
     public function copy($path, $newpath)
     {
+        $path = $this->applyPathPrefix($path);
+        $newpath = $this->applyPathPrefix($newpath);
+
         $this->client->copyBlob($this->container, $newpath, $this->container, $path);
 
         return true;
@@ -93,6 +98,8 @@ class AzureAdapter implements AdapterInterface
      */
     public function delete($path)
     {
+        $path = $this->applyPathPrefix($path);
+
         $this->client->deleteBlob($this->container, $path);
 
         return true;
@@ -103,6 +110,8 @@ class AzureAdapter implements AdapterInterface
      */
     public function deleteDir($dirname)
     {
+        $dirname = $this->applyPathPrefix($dirname);
+
         $options = new ListBlobsOptions();
         $options->setPrefix($dirname . '/');
 
@@ -110,7 +119,7 @@ class AzureAdapter implements AdapterInterface
         $listResults = $this->client->listBlobs($this->container, $options);
 
         foreach ($listResults->getBlobs() as $blob) {
-            /** @var Blob $blob */
+            /** @var \WindowsAzure\Blob\Models\Blob $blob */
             $this->client->deleteBlob($this->container, $blob->getName());
         }
 
@@ -132,6 +141,8 @@ class AzureAdapter implements AdapterInterface
      */
     public function has($path)
     {
+        $path = $this->applyPathPrefix($path);
+
         try {
             $this->client->getBlobMetadata($this->container, $path);
         } catch (ServiceException $e) {
@@ -150,7 +161,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function read($path)
     {
-        /** @var GetBlobResult $blobResult */
+        $path = $this->applyPathPrefix($path);
+
+        /** @var \WindowsAzure\Blob\Models\GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
         $content = $this->streamContentsToString($blobResult->getContentStream());
@@ -163,7 +176,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function readStream($path)
     {
-        /** @var GetBlobResult $blobResult */
+        $path = $this->applyPathPrefix($path);
+
+        /** @var \WindowsAzure\Blob\Models\GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
 
@@ -175,10 +190,12 @@ class AzureAdapter implements AdapterInterface
      */
     public function listContents($directory = '', $recursive = false)
     {
+        $directory = $this->applyPathPrefix($directory);
+
         // Append trailing slash only for directory other than root (which after normalization is an empty string).
         // Listing for / doesn't work properly otherwise.
         if (strlen($directory)) {
-            $directory .= '/';
+            $directory = rtrim($directory, '/') . '/';
         }
 
         $options = new ListBlobsOptions();
@@ -209,7 +226,9 @@ class AzureAdapter implements AdapterInterface
      */
     public function getMetadata($path)
     {
-        /** @var GetBlobPropertiesResult $result */
+        $path = $this->applyPathPrefix($path);
+
+        /** @var \WindowsAzure\Blob\Models\GetBlobPropertiesResult $result */
         $result = $this->client->getBlobProperties($this->container, $path);
 
         return $this->normalizeBlobProperties($path, $result->getProperties());
@@ -275,8 +294,10 @@ class AzureAdapter implements AdapterInterface
     protected function normalizeBlobProperties($path, BlobProperties $properties)
     {
         if (substr($path, -1) === '/') {
-            return ['type' => 'dir', 'path' => rtrim($path, '/')];
+            return ['type' => 'dir', 'path' => $this->removePathPrefix(rtrim($path, '/'))];
         }
+
+        $path = $this->removePathPrefix($path);
 
         return [
             'path' => $path,
@@ -297,7 +318,7 @@ class AzureAdapter implements AdapterInterface
      */
     protected function normalizeBlobPrefix(BlobPrefix $blobPrefix)
     {
-        return ['type' => 'dir', 'path' => rtrim($blobPrefix->getName(), '/')];
+        return ['type' => 'dir', 'path' => $this->removePathPrefix(rtrim($blobPrefix->getName(), '/'))];
     }
 
     /**
@@ -315,16 +336,24 @@ class AzureAdapter implements AdapterInterface
     /**
      * Upload a file.
      *
-     * @param string $path
-     * @param mixed  $content Either a string or a stream.
-     * @param Config $config
+     * @param string $path     Path
+     * @param mixed  $contents Either a string or a stream.
+     * @param Config $config   Config
      *
      * @return array
      */
     protected function upload($path, $contents, Config $config)
     {
-        /** @var CopyBlobResult $result */
-        $result = $this->client->createBlockBlob($this->container, $path, $contents);
+        $path = $this->applyPathPrefix($path);
+
+        $options = new CreateBlobOptions();
+
+        if ($mimetype = $config->get('mimetype')) {
+            $options->setContentType($mimetype);
+        }
+
+        /** @var \WindowsAzure\Blob\Models\CopyBlobResult $result */
+        $result = $this->client->createBlockBlob($this->container, $path, $contents, $options);
 
         return $this->normalize($path, $result->getLastModified()->format('U'), $contents);
     }
