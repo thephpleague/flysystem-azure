@@ -9,6 +9,7 @@ use League\Flysystem\Util;
 use WindowsAzure\Blob\Internal\IBlob;
 use WindowsAzure\Blob\Models\BlobPrefix;
 use WindowsAzure\Blob\Models\BlobProperties;
+use WindowsAzure\Blob\Models\CopyBlobResult;
 use WindowsAzure\Blob\Models\CreateBlobOptions;
 use WindowsAzure\Blob\Models\ListBlobsOptions;
 use WindowsAzure\Blob\Models\ListBlobsResult;
@@ -29,6 +30,17 @@ class AzureAdapter extends AbstractAdapter
     protected $client;
 
     /**
+     * @var string[]
+     */
+    protected static $metaOptions = [
+        'CacheControl',
+        'ContentType',
+        'Metadata',
+        'ContentLanguage',
+        'ContentEncoding',
+    ];
+
+    /**
      * Constructor.
      *
      * @param IBlob  $azureClient
@@ -42,7 +54,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function write($path, $contents, Config $config)
     {
@@ -50,7 +62,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeStream($path, $resource, Config $config)
     {
@@ -58,7 +70,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update($path, $contents, Config $config)
     {
@@ -66,7 +78,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function updateStream($path, $resource, Config $config)
     {
@@ -74,7 +86,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rename($path, $newpath)
     {
@@ -94,7 +106,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete($path)
     {
@@ -106,7 +118,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteDir($dirname)
     {
@@ -127,17 +139,17 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function createDir($dirname, Config $config)
     {
-        $this->write(rtrim($dirname, '/') . '/', ' ', $config);
+        $this->write(rtrim($dirname, '/').'/', ' ', $config);
 
         return ['path' => $dirname, 'type' => 'dir'];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function has($path)
     {
@@ -157,7 +169,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function read($path)
     {
@@ -172,7 +184,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function readStream($path)
     {
@@ -186,7 +198,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function listContents($directory = '', $recursive = false)
     {
@@ -222,7 +234,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMetadata($path)
     {
@@ -235,7 +247,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSize($path)
     {
@@ -243,7 +255,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMimetype($path)
     {
@@ -251,7 +263,7 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTimestamp($path)
     {
@@ -336,9 +348,9 @@ class AzureAdapter extends AbstractAdapter
     /**
      * Upload a file.
      *
-     * @param string $path     Path
-     * @param mixed  $contents Either a string or a stream.
-     * @param Config $config   Config
+     * @param string           $path     Path
+     * @param string|resource  $contents Either a string or a stream.
+     * @param Config           $config   Config
      *
      * @return array
      */
@@ -346,15 +358,35 @@ class AzureAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
 
+        /** @var CopyBlobResult $result */
+        $result = $this->client->createBlockBlob($this->container, $path, $contents, $this->getOptionsFromConfig($config));
+
+        return $this->normalize($path, $result->getLastModified()->format('U'), $contents);
+    }
+
+    /**
+     * Retrieve options from a Config instance.
+     *
+     * @param Config $config
+     *
+     * @return CreateBlobOptions
+     */
+    protected function getOptionsFromConfig(Config $config)
+    {
         $options = new CreateBlobOptions();
+
+        foreach (static::$metaOptions as $option) {
+            if (!$config->has($option)) {
+                continue;
+            }
+
+            call_user_func([$options, "set$option"], $config->get($option));
+        }
 
         if ($mimetype = $config->get('mimetype')) {
             $options->setContentType($mimetype);
         }
 
-        /** @var \WindowsAzure\Blob\Models\CopyBlobResult $result */
-        $result = $this->client->createBlockBlob($this->container, $path, $contents, $options);
-
-        return $this->normalize($path, $result->getLastModified()->format('U'), $contents);
+        return $options;
     }
 }
