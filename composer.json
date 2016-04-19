@@ -11,10 +11,7 @@
     "require": {
         "php": ">=5.4.0",
         "league/flysystem": "~1.0",
-        "pear-pear.php.net/mail_mime" : "*",
-        "pear-pear.php.net/http_request2" : "*",
-        "pear-pear.php.net/mail_mimedecode" : "*",
-        "microsoft/windowsazure": "~0.4.0"
+        "microsoft/windowsazure": "~0.4.2"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0",
@@ -28,12 +25,6 @@
     "config": {
         "bin-dir": "bin"
     },
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear.php.net"
-        }
-    ],
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
