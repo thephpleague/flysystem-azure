@@ -4,11 +4,11 @@ namespace League\Flysystem\Azure;
 
 use League\Flysystem\Config;
 use Mockery;
-use WindowsAzure\Blob\Models\CopyBlobResult;
-use WindowsAzure\Blob\Models\CreateBlobOptions;
-use WindowsAzure\Blob\Models\GetBlobResult;
-use WindowsAzure\Common\Internal\Resources;
-use WindowsAzure\Common\ServiceException;
+use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
+use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
+use MicrosoftAzure\Storage\Common\Internal\Resources;
+use MicrosoftAzure\Storage\Common\ServiceException;
 
 class AzureTests extends \PHPUnit_Framework_TestCase
 {
@@ -19,7 +19,7 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     protected function getAzureClient()
     {
-        return Mockery::mock('WindowsAzure\Blob\Internal\IBlob');
+        return Mockery::mock('MicrosoftAzure\Storage\Blob\Internal\IBlob');
     }
 
     protected function getCopyBlobResult($lastModified)
@@ -192,7 +192,7 @@ class AzureTests extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException WindowsAzure\Common\ServiceException
+     * @expectedException MicrosoftAzure\Storage\Common\ServiceException
      */
     public function testHasWhenError()
     {
@@ -236,10 +236,10 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testDeleteDir()
     {
-        $blob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $blob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
         $blob->shouldReceive('getName')->once();
 
-        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
 
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
@@ -250,16 +250,16 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testListContents()
     {
-        $properties = Mockery::mock('WindowsAzure\Blob\Models\BlobProperties');
+        $properties = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\BlobProperties');
         $properties->shouldReceive('getLastModified')->once()->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
         $properties->shouldReceive('getContentType')->once()->andReturn('text/plain');
         $properties->shouldReceive('getContentLength')->once()->andReturn(42);
 
-        $blob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $blob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
         $blob->shouldReceive('getName')->once()->andReturn('foo.txt');
         $blob->shouldReceive('getProperties')->once()->andReturn($properties);
 
-        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
 
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
@@ -280,20 +280,20 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testDirectoryEmulationInListContents()
     {
-        $properties = Mockery::mock('WindowsAzure\Blob\Models\BlobProperties');
+        $properties = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\BlobProperties');
         $properties->shouldReceive('getLastModified')->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
         $properties->shouldReceive('getContentType')->andReturn('text/plain');
         $properties->shouldReceive('getContentLength')->andReturn(42);
 
-        $fileBlob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $fileBlob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
         $fileBlob->shouldReceive('getName')->once()->andReturn('foo.txt');
         $fileBlob->shouldReceive('getProperties')->once()->andReturn($properties);
 
-        $folderBlob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $folderBlob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
         $folderBlob->shouldReceive('getName')->once()->andReturn('baz/bar.txt');
         $folderBlob->shouldReceive('getProperties')->once()->andReturn($properties);
 
-        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$fileBlob, $folderBlob]);
 
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
@@ -326,19 +326,19 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
     public function testPrefixesInListContents()
     {
-        $properties = Mockery::mock('WindowsAzure\Blob\Models\BlobProperties');
+        $properties = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\BlobProperties');
         $properties->shouldReceive('getLastModified')->once()->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
         $properties->shouldReceive('getContentType')->once()->andReturn('text/plain');
         $properties->shouldReceive('getContentLength')->once()->andReturn(42);
 
-        $blob = Mockery::mock('WindowsAzure\Blob\Models\Blob');
+        $blob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
         $blob->shouldReceive('getName')->once()->andReturn('foo.txt');
         $blob->shouldReceive('getProperties')->once()->andReturn($properties);
 
-        $blobPrefix = Mockery::mock('WindowsAzure\Blob\Models\BlobPrefix');
+        $blobPrefix = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\BlobPrefix');
         $blobPrefix->shouldReceive('getName')->once()->andReturn('bar/');
 
-        $blobsList = Mockery::mock('WindowsAzure\Blob\Models\ListBlobsResult');
+        $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([$blobPrefix]);
 

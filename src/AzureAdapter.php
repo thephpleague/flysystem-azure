@@ -6,14 +6,14 @@ use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
-use WindowsAzure\Blob\Internal\IBlob;
-use WindowsAzure\Blob\Models\BlobPrefix;
-use WindowsAzure\Blob\Models\BlobProperties;
-use WindowsAzure\Blob\Models\CopyBlobResult;
-use WindowsAzure\Blob\Models\CreateBlobOptions;
-use WindowsAzure\Blob\Models\ListBlobsOptions;
-use WindowsAzure\Blob\Models\ListBlobsResult;
-use WindowsAzure\Common\ServiceException;
+use MicrosoftAzure\Storage\Blob\Internal\IBlob;
+use MicrosoftAzure\Storage\Blob\Models\BlobPrefix;
+use MicrosoftAzure\Storage\Blob\Models\BlobProperties;
+use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
+use MicrosoftAzure\Storage\Blob\Models\ListBlobsOptions;
+use MicrosoftAzure\Storage\Blob\Models\ListBlobsResult;
+use MicrosoftAzure\Storage\Common\ServiceException;
 
 class AzureAdapter extends AbstractAdapter
 {
@@ -131,7 +131,7 @@ class AzureAdapter extends AbstractAdapter
         $listResults = $this->client->listBlobs($this->container, $options);
 
         foreach ($listResults->getBlobs() as $blob) {
-            /** @var \WindowsAzure\Blob\Models\Blob $blob */
+            /** @var \MicrosoftAzure\Storage\Blob\Models\Blob $blob */
             $this->client->deleteBlob($this->container, $blob->getName());
         }
 
@@ -175,7 +175,7 @@ class AzureAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
 
-        /** @var \WindowsAzure\Blob\Models\GetBlobResult $blobResult */
+        /** @var \MicrosoftAzure\Storage\Blob\Models\GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
         $content = $this->streamContentsToString($blobResult->getContentStream());
@@ -190,7 +190,7 @@ class AzureAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
 
-        /** @var \WindowsAzure\Blob\Models\GetBlobResult $blobResult */
+        /** @var \MicrosoftAzure\Storage\Blob\Models\GetBlobResult $blobResult */
         $blobResult = $this->client->getBlob($this->container, $path);
         $properties = $blobResult->getProperties();
 
@@ -240,7 +240,7 @@ class AzureAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
 
-        /** @var \WindowsAzure\Blob\Models\GetBlobPropertiesResult $result */
+        /** @var \MicrosoftAzure\Storage\Blob\Models\GetBlobPropertiesResult $result */
         $result = $this->client->getBlobProperties($this->container, $path);
 
         return $this->normalizeBlobProperties($path, $result->getProperties());
