@@ -45,6 +45,7 @@ class AzureAdapter extends AbstractAdapter
      *
      * @param IBlob  $azureClient
      * @param string $container
+     * @param string $prefix
      */
     public function __construct(IBlob $azureClient, $container, $prefix = null)
     {
@@ -143,7 +144,7 @@ class AzureAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config)
     {
-        $this->write(rtrim($dirname, '/').'/', ' ', $config);
+        $this->write(rtrim($dirname, '/') . '/', ' ', $config);
 
         return ['path' => $dirname, 'type' => 'dir'];
     }
@@ -213,7 +214,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new ListBlobsOptions();
         $options->setPrefix($directory);
 
-        if (!$recursive) {
+        if ( ! $recursive) {
             $options->setDelimiter('/');
         }
 
@@ -226,8 +227,11 @@ class AzureAdapter extends AbstractAdapter
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
         }
 
-        if (!$recursive) {
-            $contents = array_merge($contents, array_map([$this, 'normalizeBlobPrefix'], $listResults->getBlobPrefixes()));
+        if ( ! $recursive) {
+            $contents = array_merge(
+                $contents,
+                array_map([$this, 'normalizeBlobPrefix'], $listResults->getBlobPrefixes())
+            );
         }
 
         return Util::emulateDirectories($contents);
@@ -348,9 +352,9 @@ class AzureAdapter extends AbstractAdapter
     /**
      * Upload a file.
      *
-     * @param string           $path     Path
-     * @param string|resource  $contents Either a string or a stream.
-     * @param Config           $config   Config
+     * @param string          $path     Path
+     * @param string|resource $contents Either a string or a stream.
+     * @param Config          $config   Config
      *
      * @return array
      */
@@ -359,7 +363,12 @@ class AzureAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
 
         /** @var CopyBlobResult $result */
-        $result = $this->client->createBlockBlob($this->container, $path, $contents, $this->getOptionsFromConfig($config));
+        $result = $this->client->createBlockBlob(
+            $this->container,
+            $path,
+            $contents,
+            $this->getOptionsFromConfig($config)
+        );
 
         return $this->normalize($path, $result->getLastModified()->format('U'), $contents);
     }
@@ -376,7 +385,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new CreateBlobOptions();
 
         foreach (static::$metaOptions as $option) {
-            if (!$config->has($option)) {
+            if ( ! $config->has($option)) {
                 continue;
             }
 
