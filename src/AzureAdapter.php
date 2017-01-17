@@ -398,4 +398,21 @@ class AzureAdapter extends AbstractAdapter
 
         return $options;
     }
+
+    /**
+     * Return a url link to the object to download or view
+     *
+     * @param String $path
+     *
+     * @return string
+     */
+    public function getUrl($path){
+
+        $path = $this->applyPathPrefix($path);
+
+        $path = $this->client->getUri().$this->container.'/'.$path;
+
+        return $path;
+
+    }
 }
