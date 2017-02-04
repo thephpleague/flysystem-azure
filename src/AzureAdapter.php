@@ -218,12 +218,23 @@ class AzureAdapter extends AbstractAdapter
             $options->setDelimiter('/');
         }
 
-        /** @var ListBlobsResult $listResults */
-        $listResults = $this->client->listBlobs($this->container, $options);
+        $blobs = [];
+
+        while (true) {
+            /** @var ListBlobsResult $listResults */
+            $listResults = $this->client->listBlobs($this->container, $options);
+            $blobs = array_merge($blobs, $listResults->getBlobs());
+
+            if (!$listResults->getNextMarker()) {
+                break;
+            }
+
+            $options->setMarker($listResults->getNextMarker());
+        }
 
         $contents = [];
 
-        foreach ($listResults->getBlobs() as $blob) {
+        foreach ($blobs as $blob) {
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
         }
 
