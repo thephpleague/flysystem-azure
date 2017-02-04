@@ -264,11 +264,52 @@ class AzureTests extends \PHPUnit_Framework_TestCase
 
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
 
+        $blobsList->shouldReceive('getNextMarker')->once()->andReturn(null);
+
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
 
         $this->assertSame([
             [
                 'path' => 'foo.txt',
+                'timestamp' => 1417507741,
+                'dirname' => '',
+                'mimetype' => 'text/plain',
+                'size' => 42,
+                'type' => 'file',
+            ],
+        ], $this->adapter->listContents());
+    }
+
+    public function testListContentsWithMarker()
+    {
+        $properties = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\BlobProperties');
+        $properties->shouldReceive('getLastModified')->twice()->andReturn(\DateTime::createFromFormat(\DateTime::RFC1123, 'Tue, 02 Dec 2014 08:09:01 +0000'));
+        $properties->shouldReceive('getContentType')->twice()->andReturn('text/plain');
+        $properties->shouldReceive('getContentLength')->twice()->andReturn(42);
+
+        $blob = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\Blob');
+        $blob->shouldReceive('getName')->twice()->andReturnValues(['foo.txt', 'foo2.txt']);
+        $blob->shouldReceive('getProperties')->twice()->andReturn($properties);
+
+        $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
+        $blobsList->shouldReceive('getBlobs')->twice()->andReturn([$blob]);
+
+        $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
+
+        $blobsList->shouldReceive('getNextMarker')->twice()->andReturnValues(["marker_id", null]);
+
+        $this->azure->shouldReceive('listBlobs')->twice()->andReturn($blobsList);
+
+        $this->assertSame([
+            [
+                'path' => 'foo.txt',
+                'timestamp' => 1417507741,
+                'dirname' => '',
+                'mimetype' => 'text/plain',
+                'size' => 42,
+                'type' => 'file',
+            ], [
+                'path' => 'foo2.txt',
                 'timestamp' => 1417507741,
                 'dirname' => '',
                 'mimetype' => 'text/plain',
@@ -297,6 +338,8 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$fileBlob, $folderBlob]);
 
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([]);
+
+        $blobsList->shouldReceive('getNextMarker')->once()->andReturn(null);
 
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
 
@@ -341,6 +384,8 @@ class AzureTests extends \PHPUnit_Framework_TestCase
         $blobsList = Mockery::mock('MicrosoftAzure\Storage\Blob\Models\ListBlobsResult');
         $blobsList->shouldReceive('getBlobs')->once()->andReturn([$blob]);
         $blobsList->shouldReceive('getBlobPrefixes')->once()->andReturn([$blobPrefix]);
+
+        $blobsList->shouldReceive('getNextMarker')->once()->andReturn(null);
 
         $this->azure->shouldReceive('listBlobs')->once()->andReturn($blobsList);
 

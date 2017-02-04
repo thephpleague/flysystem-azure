@@ -225,11 +225,11 @@ class AzureAdapter extends AbstractAdapter
             $listResults = $this->client->listBlobs($this->container, $options);
             $blobs = array_merge($blobs, $listResults->getBlobs());
 
-            if (!$listResults->getNextMarker()) {
+            if (!$nextMarker = $listResults->getNextMarker()) {
                 break;
             }
 
-            $options->setMarker($listResults->getNextMarker());
+            $options->setMarker($nextMarker);
         }
 
         $contents = [];
