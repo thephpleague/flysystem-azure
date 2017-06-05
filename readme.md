@@ -39,7 +39,10 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Azure\AzureAdapter;
 
 $endpoint = sprintf('DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s', 'account-name', 'api-key');
+// $endpoint = spinrtf('UseDevelopmentStorage=%s', 'true'); // for emulator
 $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($endpoint);
 
 $filesystem = new Filesystem(new AzureAdapter($blobRestProxy, 'my-container'));
+//$filesystem = new Filesystem(new AzureAdapter($blobRestProxy, 'devstoreaccount1/'.'my-container')); // for emulator
 ```
+
