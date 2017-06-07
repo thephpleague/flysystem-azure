@@ -275,6 +275,14 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getUrl($path)
+    {
+        return (string)Util::normalizePath($this->client->getPsrPrimaryUri() . $this->container . '/'. $path);
+    }
+
+    /**
      * Builds the normalized output array.
      *
      * @param string $path
