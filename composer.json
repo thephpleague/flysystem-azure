@@ -1,5 +1,5 @@
 {
-    "name": "league/flysystem-azure",
+    "name": "cberio/flysystem-azure",
     "description": "Flysystem adapter for Windows Azure",
     "license": "MIT",
     "authors": [
