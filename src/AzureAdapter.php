@@ -279,7 +279,7 @@ class AzureAdapter extends AbstractAdapter
      */
     public function getUrl($path)
     {
-        return (string)Util::normalizePath($this->client->getPsrPrimaryUri() . $this->container . '/'. $path);
+        return (string) $this->client->getPsrPrimaryUri()->withPath($this->container) . '/'. $path;
     }
 
     /**
