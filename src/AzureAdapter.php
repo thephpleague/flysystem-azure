@@ -369,7 +369,9 @@ class AzureAdapter extends AbstractAdapter
     protected function upload($path, $contents, Config $config)
     {
         $path = $this->applyPathPrefix($path);
-
+        
+        $config->set('ContentType', Util::guessMimeType($path, $contents));
+        
         /** @var CopyBlobResult $result */
         $result = $this->client->createBlockBlob(
             $this->container,
