@@ -13,7 +13,7 @@ use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
 use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsResult;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
 class AzureAdapter extends AbstractAdapter
 {
@@ -275,6 +275,14 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getUrl($path)
+    {
+        return (string) $this->client->getPsrPrimaryUri()->withPath($this->container) . '/'. $path;
+    }
+
+    /**
      * Builds the normalized output array.
      *
      * @param string $path
@@ -361,7 +369,9 @@ class AzureAdapter extends AbstractAdapter
     protected function upload($path, $contents, Config $config)
     {
         $path = $this->applyPathPrefix($path);
-
+        
+        $config->set('ContentType', Util::guessMimeType($path, $contents));
+        
         /** @var CopyBlobResult $result */
         $result = $this->client->createBlockBlob(
             $this->container,

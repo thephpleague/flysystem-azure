@@ -1,5 +1,5 @@
 {
-    "name": "league/flysystem-azure",
+    "name": "cberio/flysystem-azure",
     "description": "Flysystem adapter for Windows Azure",
     "license": "MIT",
     "authors": [
@@ -11,7 +11,7 @@
     "require": {
         "php": ">=5.5.0",
         "league/flysystem": "~1.0",
-        "microsoft/azure-storage": "~0.10.1"
+        "microsoft/azure-storage": "~0.15.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0",
@@ -24,10 +24,5 @@
     },
     "config": {
         "bin-dir": "bin"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev"
-        }
     }
 }
