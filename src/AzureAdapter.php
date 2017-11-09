@@ -55,6 +55,26 @@ class AzureAdapter extends AbstractAdapter
     }
 
     /**
+     * Get the Azure client instance.
+     *
+     * @return IBlob
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * Get the Azure container.
+     *
+     * @return string
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function write($path, $contents, Config $config)
