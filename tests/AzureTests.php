@@ -60,6 +60,16 @@ class AzureTests extends TestCase
         $this->assertInstanceOf('League\Flysystem\Azure\AzureAdapter', $adapter);
     }
 
+    public function testGetClient()
+    {
+        $this->assertInstanceOf('MicrosoftAzure\Storage\Blob\Internal\IBlob', $this->adapter->getClient());
+    }
+
+    public function testGetContainer()
+    {
+        $this->assertEquals(self::CONTAINER_NAME, $this->adapter->getContainer());
+    }
+
     public function testWrite()
     {
         $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
