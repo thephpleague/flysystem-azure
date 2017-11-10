@@ -9,8 +9,9 @@ use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
 use MicrosoftAzure\Storage\Common\Internal\Resources;
 use MicrosoftAzure\Storage\Common\ServiceException;
+use PHPUnit\Framework\TestCase;
 
-class AzureTests extends \PHPUnit_Framework_TestCase
+class AzureTests extends TestCase
 {
     const CONTAINER_NAME = 'test-container';
 
