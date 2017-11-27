@@ -13,7 +13,7 @@ use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
 use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsResult;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
 class AzureAdapter extends AbstractAdapter
 {

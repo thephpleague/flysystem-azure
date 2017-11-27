@@ -2,13 +2,15 @@
 
 namespace League\Flysystem\Azure;
 
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Stream;
 use League\Flysystem\Config;
 use Mockery;
 use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
 use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
 use MicrosoftAzure\Storage\Common\Internal\Resources;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 use PHPUnit\Framework\TestCase;
 
 class AzureTests extends TestCase
@@ -35,7 +37,7 @@ class AzureTests extends TestCase
         return GetBlobResult::create([
             Resources::LAST_MODIFIED => $lastModified,
             Resources::CONTENT_LENGTH => strlen($contentString),
-        ], $contentString, []);
+        ], new Stream($this->getStreamFromString($contentString)), []);
     }
 
     protected function getStreamFromString($string)
@@ -187,17 +189,17 @@ class AzureTests extends TestCase
 
     public function testHasWhenFileDoesNotExist()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(404));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(new Response(404)));
 
         $this->assertFalse($this->adapter->has('foo.txt'));
     }
 
     /**
-     * @expectedException MicrosoftAzure\Storage\Common\ServiceException
+     * @expectedException \MicrosoftAzure\Storage\Common\Exceptions\ServiceException
      */
     public function testHasWhenError()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(500));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(new Response(500)));
 
         $this->adapter->has('foo.txt');
     }
@@ -367,7 +369,7 @@ class AzureTests extends TestCase
         $settings = [
             'ContentType' => 'someContentType',
             'CacheControl' => 'someCacheControl',
-            'Metadata' => 'someMetadata',
+            'Metadata' => ['someMetadata'],
             'ContentLanguage' => 'someContentLanguage',
             'ContentEncoding' => 'someContentEncoding',
         ];
