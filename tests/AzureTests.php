@@ -3,15 +3,15 @@
 namespace League\Flysystem\Azure;
 
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\stream_for;
 use League\Flysystem\Config;
-use Mockery;
 use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
 use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
-use MicrosoftAzure\Storage\Common\Internal\Resources;
 use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
+use MicrosoftAzure\Storage\Common\Internal\Resources;
+use Mockery;
 use PHPUnit\Framework\TestCase;
+use function GuzzleHttp\Psr7\stream_for;
 
 class AzureTests extends TestCase
 {

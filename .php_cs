@@ -7,6 +7,10 @@ return PhpCsFixer\Config::create()
         'array_syntax' => ['syntax' => 'short'],
         'yoda_style' => false,
     ])
-    ->setFinder(PhpCsFixer\Finder::create()->in('src'))
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->in(__DIR__)
+            ->exclude('vendor')
+    )
     ->setUsingCache(false)
 ;
