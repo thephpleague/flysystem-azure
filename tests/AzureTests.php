@@ -59,12 +59,6 @@ class AzureTests extends TestCase
         $this->adapter = new AzureAdapter($this->azure, self::CONTAINER_NAME);
     }
 
-    public function testBCAdapter()
-    {
-        $adapter = new Adapter($this->azure, self::CONTAINER_NAME);
-        $this->assertInstanceOf('League\Flysystem\Azure\AzureAdapter', $adapter);
-    }
-
     public function testWrite()
     {
         $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
