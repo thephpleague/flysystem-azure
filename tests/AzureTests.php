@@ -17,7 +17,14 @@ class AzureTests extends TestCase
 {
     const CONTAINER_NAME = 'test-container';
 
+    /**
+     * @var AzureAdapter
+     */
     private $adapter;
+
+    /**
+     * @var \MicrosoftAzure\Storage\Blob\Internal\IBlob
+     */
     private $azure;
 
     protected function getAzureClient()
