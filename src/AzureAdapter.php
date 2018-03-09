@@ -10,10 +10,10 @@ use MicrosoftAzure\Storage\Blob\Internal\IBlob;
 use MicrosoftAzure\Storage\Blob\Models\BlobPrefix;
 use MicrosoftAzure\Storage\Blob\Models\BlobProperties;
 use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
-use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlockBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsOptions;
 use MicrosoftAzure\Storage\Blob\Models\ListBlobsResult;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
 class AzureAdapter extends AbstractAdapter
 {
@@ -214,7 +214,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new ListBlobsOptions();
         $options->setPrefix($directory);
 
-        if ( ! $recursive) {
+        if (! $recursive) {
             $options->setDelimiter('/');
         }
 
@@ -227,7 +227,7 @@ class AzureAdapter extends AbstractAdapter
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
         }
 
-        if ( ! $recursive) {
+        if (! $recursive) {
             $contents = array_merge(
                 $contents,
                 array_map([$this, 'normalizeBlobPrefix'], $listResults->getBlobPrefixes())
@@ -378,14 +378,14 @@ class AzureAdapter extends AbstractAdapter
      *
      * @param Config $config
      *
-     * @return CreateBlobOptions
+     * @return CreateBlockBlobOptions
      */
     protected function getOptionsFromConfig(Config $config)
     {
-        $options = new CreateBlobOptions();
+        $options = new CreateBlockBlobOptions();
 
         foreach (static::$metaOptions as $option) {
-            if ( ! $config->has($option)) {
+            if (! $config->has($option)) {
                 continue;
             }
 

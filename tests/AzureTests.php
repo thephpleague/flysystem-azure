@@ -2,20 +2,29 @@
 
 namespace League\Flysystem\Azure;
 
+use GuzzleHttp\Psr7\Response;
 use League\Flysystem\Config;
-use Mockery;
 use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
 use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 use MicrosoftAzure\Storage\Common\Internal\Resources;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use Mockery;
 use PHPUnit\Framework\TestCase;
+use function GuzzleHttp\Psr7\stream_for;
 
 class AzureTests extends TestCase
 {
     const CONTAINER_NAME = 'test-container';
 
+    /**
+     * @var AzureAdapter
+     */
     private $adapter;
+
+    /**
+     * @var \MicrosoftAzure\Storage\Blob\Internal\IBlob
+     */
     private $azure;
 
     protected function getAzureClient()
@@ -35,16 +44,12 @@ class AzureTests extends TestCase
         return GetBlobResult::create([
             Resources::LAST_MODIFIED => $lastModified,
             Resources::CONTENT_LENGTH => strlen($contentString),
-        ], $contentString, []);
+        ], $this->getStreamFromString($contentString), []);
     }
 
     protected function getStreamFromString($string)
     {
-        $stream = fopen('php://memory', 'r+');
-        fwrite($stream, $string);
-        rewind($stream);
-
-        return $stream;
+        return stream_for($string);
     }
 
     public function setUp()
@@ -52,12 +57,6 @@ class AzureTests extends TestCase
         $this->azure = $this->getAzureClient();
 
         $this->adapter = new AzureAdapter($this->azure, self::CONTAINER_NAME);
-    }
-
-    public function testBCAdapter()
-    {
-        $adapter = new Adapter($this->azure, self::CONTAINER_NAME);
-        $this->assertInstanceOf('League\Flysystem\Azure\AzureAdapter', $adapter);
     }
 
     public function testWrite()
@@ -187,17 +186,17 @@ class AzureTests extends TestCase
 
     public function testHasWhenFileDoesNotExist()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(404));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(new Response(404)));
 
         $this->assertFalse($this->adapter->has('foo.txt'));
     }
 
     /**
-     * @expectedException MicrosoftAzure\Storage\Common\ServiceException
+     * @expectedException \MicrosoftAzure\Storage\Common\Exceptions\ServiceException
      */
     public function testHasWhenError()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(500));
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(new Response(500)));
 
         $this->adapter->has('foo.txt');
     }
@@ -317,10 +316,10 @@ class AzureTests extends TestCase
         $last = end($listing);
 
         $this->assertSame($last, [
+            'path' => 'baz',
             'dirname' => '',
             'basename' => 'baz',
             'filename' => 'baz',
-            'path' => 'baz',
             'type' => 'dir',
         ]);
     }
@@ -367,7 +366,9 @@ class AzureTests extends TestCase
         $settings = [
             'ContentType' => 'someContentType',
             'CacheControl' => 'someCacheControl',
-            'Metadata' => 'someMetadata',
+            'Metadata' => [
+                'some' => 'metadata',
+            ],
             'ContentLanguage' => 'someContentLanguage',
             'ContentEncoding' => 'someContentEncoding',
         ];
