@@ -214,7 +214,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new ListBlobsOptions();
         $options->setPrefix($directory);
 
-        if ( ! $recursive) {
+        if (! $recursive) {
             $options->setDelimiter('/');
         }
 
@@ -227,7 +227,7 @@ class AzureAdapter extends AbstractAdapter
             $contents[] = $this->normalizeBlobProperties($blob->getName(), $blob->getProperties());
         }
 
-        if ( ! $recursive) {
+        if (! $recursive) {
             $contents = array_merge(
                 $contents,
                 array_map([$this, 'normalizeBlobPrefix'], $listResults->getBlobPrefixes())
@@ -385,7 +385,7 @@ class AzureAdapter extends AbstractAdapter
         $options = new CreateBlockBlobOptions();
 
         foreach (static::$metaOptions as $option) {
-            if ( ! $config->has($option)) {
+            if (! $config->has($option)) {
                 continue;
             }
 
