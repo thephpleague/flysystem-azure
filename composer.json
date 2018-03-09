@@ -6,6 +6,9 @@
         {
             "name": "Frank de Jonge",
             "email": "info@frenky.net"
+        }, {
+            "name": "Tom Witkowski",
+            "email": "dev.gummibeer@gmail.com"
         }
     ],
     "require": {
@@ -14,16 +17,14 @@
         "microsoft/azure-storage-blob": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.8.36",
-        "mockery/mockery": "~0.9"
+        "phpunit/phpunit": "^5.7.25",
+        "mockery/mockery": "0.9.*",
+        "friendsofphp/php-cs-fixer": "^2.10"
     },
     "autoload": {
         "psr-4": {
             "League\\Flysystem\\Azure\\": "src/"
         }
-    },
-    "config": {
-        "bin-dir": "bin"
     },
     "extra": {
         "branch-alias": {

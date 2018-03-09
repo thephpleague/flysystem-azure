@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit backupGlobals="false"
          backupStaticAttributes="false"
-         bootstrap="./phpunit.php"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="true"
+         stopOnFailure="false"
          syntaxCheck="true"
+         verbose="true"
 >
     <testsuites>
         <testsuite name="flysystem/azure/tests">
@@ -21,6 +21,11 @@
         </whitelist>
     </filter>
     <listeners>
-        <listener class="Mockery\Adapter\Phpunit\TestListener" file="./vendor/mockery/mockery/library/Mockery/Adapter/Phpunit/TestListener.php"></listener>
+        <listener class="Mockery\Adapter\Phpunit\TestListener" file="./vendor/mockery/mockery/library/Mockery/Adapter/Phpunit/TestListener.php" />
     </listeners>
+    <logging>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="true"/>
+        <log type="coverage-html" target="coverage" showUncoveredFiles="true"/>
+        <log type="coverage-clover" target="coverage.xml" showUncoveredFiles="true"/>
+    </logging>
 </phpunit>

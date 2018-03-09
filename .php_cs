@@ -1,7 +1,12 @@
 <?php
 
-return Symfony\CS\Config\Config::create()
-    ->level(Symfony\CS\FixerInterface::SYMFONY_LEVEL)
-    ->fixers(['-yoda_conditions', 'ordered_use', 'short_array_syntax'])
-    ->finder(Symfony\CS\Finder\DefaultFinder::create()
-    ->in(__DIR__));
+return PhpCsFixer\Config::create()
+    ->setRules([
+        '@PSR2' => true,
+        'ordered_imports' => true,
+        'array_syntax' => ['syntax' => 'short'],
+        'yoda_style' => false,
+    ])
+    ->setFinder(PhpCsFixer\Finder::create()->in('src'))
+    ->setUsingCache(false)
+;
