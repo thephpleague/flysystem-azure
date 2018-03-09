@@ -44,16 +44,12 @@ class AzureTests extends TestCase
         return GetBlobResult::create([
             Resources::LAST_MODIFIED => $lastModified,
             Resources::CONTENT_LENGTH => strlen($contentString),
-        ], stream_for($contentString), []);
+        ], $this->getStreamFromString($contentString), []);
     }
 
     protected function getStreamFromString($string)
     {
-        $stream = fopen('php://memory', 'r+');
-        fwrite($stream, $string);
-        rewind($stream);
-
-        return $stream;
+        return stream_for($string);
     }
 
     public function setUp()
