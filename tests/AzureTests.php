@@ -317,10 +317,10 @@ class AzureTests extends TestCase
         $last = end($listing);
 
         $this->assertSame($last, [
+            'path' => 'baz',
             'dirname' => '',
             'basename' => 'baz',
             'filename' => 'baz',
-            'path' => 'baz',
             'type' => 'dir',
         ]);
     }
