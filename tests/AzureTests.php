@@ -4,11 +4,13 @@ namespace League\Flysystem\Azure;
 
 use League\Flysystem\Config;
 use Mockery;
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Response;
 use MicrosoftAzure\Storage\Blob\Models\CopyBlobResult;
-use MicrosoftAzure\Storage\Blob\Models\CreateBlobOptions;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlockBlobOptions;
 use MicrosoftAzure\Storage\Blob\Models\GetBlobResult;
 use MicrosoftAzure\Storage\Common\Internal\Resources;
-use MicrosoftAzure\Storage\Common\ServiceException;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 use PHPUnit\Framework\TestCase;
 
 class AzureTests extends TestCase
@@ -30,21 +32,17 @@ class AzureTests extends TestCase
         ]);
     }
 
-    protected function getReadBlobResult($lastModified, $contentString)
+    protected function getReadBlobResult($lastModified, $stream)
     {
         return GetBlobResult::create([
             Resources::LAST_MODIFIED => $lastModified,
-            Resources::CONTENT_LENGTH => strlen($contentString),
-        ], $contentString, []);
+            Resources::CONTENT_LENGTH => $stream->getSize(),
+        ], $stream, []);
     }
 
     protected function getStreamFromString($string)
     {
-        $stream = fopen('php://memory', 'r+');
-        fwrite($stream, $string);
-        rewind($stream);
-
-        return $stream;
+        return Psr7\stream_for($string);
     }
 
     public function setUp()
@@ -66,11 +64,11 @@ class AzureTests extends TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'type' => 'file',
-            'contents' => 'content',
+            'dirname'   => 'bar',
+            'type'      => 'file',
+            'contents'  => 'content',
         ], $this->adapter->write('bar/foo.txt', 'content', new Config()));
     }
 
@@ -80,11 +78,11 @@ class AzureTests extends TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'type' => 'file',
-            'contents' => 'content',
+            'dirname'   => 'bar',
+            'type'      => 'file',
+            'contents'  => 'content',
         ], $this->adapter->update('bar/foo.txt', 'content', new Config()));
     }
 
@@ -96,10 +94,10 @@ class AzureTests extends TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'type' => 'file',
+            'dirname'   => 'bar',
+            'type'      => 'file',
         ], $this->adapter->writeStream('bar/foo.txt', $stream, new Config()));
     }
 
@@ -111,33 +109,35 @@ class AzureTests extends TestCase
         $this->azure->shouldReceive('createBlockBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'type' => 'file',
+            'dirname'   => 'bar',
+            'type'      => 'file',
         ], $this->adapter->updateStream('bar/foo.txt', $stream, new Config()));
     }
 
     public function testRead()
     {
-        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', 'foo bar');
+        $stream = $this->getStreamFromString('foo bar');
+        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', $stream);
 
         $this->azure->shouldReceive('getBlob')->once()->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'mimetype' => null,
-            'size' => 7,
-            'type' => 'file',
-            'contents' => 'foo bar',
+            'dirname'   => 'bar',
+            'mimetype'  => null,
+            'size'      => 7,
+            'type'      => 'file',
+            'contents'  => 'foo bar',
         ], $this->adapter->read('bar/foo.txt', new Config()));
     }
 
     public function testReadStream()
     {
-        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', 'foo bar');
+        $stream = $this->getStreamFromString('foo bar');
+        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', $stream);
 
         $this->azure->shouldReceive('getBlob')->once()->andReturn($resultBlob);
         $result = $this->adapter->readStream('bar/foo.txt', new Config());
@@ -148,28 +148,29 @@ class AzureTests extends TestCase
         unset($result['stream']);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'mimetype' => null,
-            'size' => 7,
-            'type' => 'file',
+            'dirname'   => 'bar',
+            'mimetype'  => null,
+            'size'      => 7,
+            'type'      => 'file',
         ], $result);
     }
 
     public function testGetMetadata()
     {
-        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', 'foo bar');
+        $stream = $this->getStreamFromString('foo bar');
+        $resultBlob = $this->getReadBlobResult('Tue, 02 Dec 2014 08:09:01 +0000', $stream);
 
         $this->azure->shouldReceive('getBlobProperties')->andReturn($resultBlob);
 
         $expectedResult = [
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'mimetype' => null,
-            'size' => 7,
-            'type' => 'file',
+            'dirname'   => 'bar',
+            'mimetype'  => null,
+            'size'      => 7,
+            'type'      => 'file',
         ];
 
         $this->assertSame($expectedResult, $this->adapter->getMetadata('bar/foo.txt'));
@@ -187,17 +188,21 @@ class AzureTests extends TestCase
 
     public function testHasWhenFileDoesNotExist()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(404));
+        $response = self::getFailedResponse(404);
+
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException($response));
 
         $this->assertFalse($this->adapter->has('foo.txt'));
     }
 
     /**
-     * @expectedException MicrosoftAzure\Storage\Common\ServiceException
+     * @expectedException \MicrosoftAzure\Storage\Common\Exceptions\ServiceException
      */
     public function testHasWhenError()
     {
-        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException(500));
+        $response = self::getFailedResponse(500);
+
+        $this->azure->shouldReceive('getBlobMetadata')->andThrow(new ServiceException($response));
 
         $this->adapter->has('foo.txt');
     }
@@ -269,12 +274,12 @@ class AzureTests extends TestCase
 
         $this->assertSame([
             [
-                'path' => 'foo.txt',
+                'path'      => 'foo.txt',
                 'timestamp' => 1417507741,
-                'dirname' => '',
-                'mimetype' => 'text/plain',
-                'size' => 42,
-                'type' => 'file',
+                'dirname'   => '',
+                'mimetype'  => 'text/plain',
+                'size'      => 42,
+                'type'      => 'file',
             ],
         ], $this->adapter->listContents());
     }
@@ -306,22 +311,22 @@ class AzureTests extends TestCase
         $first = reset($listing);
 
         $this->assertSame($first, [
-            'path' => 'foo.txt',
+            'path'      => 'foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => '',
-            'mimetype' => 'text/plain',
-            'size' => 42,
-            'type' => 'file',
+            'dirname'   => '',
+            'mimetype'  => 'text/plain',
+            'size'      => 42,
+            'type'      => 'file',
         ]);
 
         $last = end($listing);
 
         $this->assertSame($last, [
-            'dirname' => '',
-            'basename' => 'baz',
-            'filename' => 'baz',
-            'path' => 'baz',
-            'type' => 'dir',
+            'path'      => 'baz',
+            'dirname'   => '',
+            'basename'  => 'baz',
+            'filename'  => 'baz',
+            'type'      => 'dir',
         ]);
     }
 
@@ -365,18 +370,18 @@ class AzureTests extends TestCase
     {
         $resultBlob = $this->getCopyBlobResult('Tue, 02 Dec 2014 08:09:01 +0000');
         $settings = [
-            'ContentType' => 'someContentType',
-            'CacheControl' => 'someCacheControl',
-            'Metadata' => 'someMetadata',
-            'ContentLanguage' => 'someContentLanguage',
-            'ContentEncoding' => 'someContentEncoding',
+            'ContentType'       => 'someContentType',
+            'CacheControl'      => 'someCacheControl',
+            'Metadata'          => ['someMetadata'],
+            'ContentLanguage'   => 'someContentLanguage',
+            'ContentEncoding'   => 'someContentEncoding',
         ];
 
         $this->azure->shouldReceive('createBlockBlob')->once()->with(
             self::CONTAINER_NAME,
             'bar/foo.txt',
             'content',
-            Mockery::on(function (CreateBlobOptions $options) use ($settings) {
+            Mockery::on(function (CreateBlockBlobOptions $options) use ($settings) {
                 foreach ($settings as $key => $value) {
                     if (call_user_func([$options, "get$key"]) != $value) {
                         return false;
@@ -388,16 +393,37 @@ class AzureTests extends TestCase
         )->andReturn($resultBlob);
 
         $this->assertSame([
-            'path' => 'bar/foo.txt',
+            'path'      => 'bar/foo.txt',
             'timestamp' => 1417507741,
-            'dirname' => 'bar',
-            'type' => 'file',
-            'contents' => 'content',
+            'dirname'   => 'bar',
+            'type'      => 'file',
+            'contents'  => 'content',
         ], $this->adapter->write('bar/foo.txt', 'content', new Config($settings)));
     }
 
     protected function tearDown()
     {
         Mockery::close();
+    }
+
+    /**
+     * Helper method to generate proper responses for the ServiceException.
+     *
+     * @param int $statusCode
+     * @param string|null $reason
+     * @return Response
+     */
+    private static function getFailedResponse($statusCode, $reason = null)
+    {
+        return new Response(
+            $statusCode,
+            [
+                Resources::DATE => "Sat, 18 Feb 2012 16:25:21 GMT",
+                Resources::X_MS_REQUEST_ID => "f16b5298-0003-011e-0e70-83666b000000"
+            ],
+            "",
+            '1.1',
+            $reason
+        );
     }
 }
